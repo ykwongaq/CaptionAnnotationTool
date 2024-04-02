@@ -1,0 +1,3 @@
+"strict mode";
+
+class Annotation {}
