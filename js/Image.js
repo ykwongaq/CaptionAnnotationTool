@@ -1,6 +1,6 @@
 "strict mode";
 
-const DATA_FOLDER = "data"
+const DATA_FOLDER = "data";
 class Image {
     constructor(imageData, annoDatas) {
         this.jsonData = jsonData;
@@ -13,4 +13,5 @@ class Image {
 
     getFileName() {
         return this.jsonData.filename;
+    }
 }
