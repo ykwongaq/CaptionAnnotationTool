@@ -149,7 +149,7 @@
         /**
          * Caption is not labelled
          */
-        const NOT_LABELLED = 2;
+        const NOT_LABELLED = -1;
         
 
         // Dom elements
@@ -667,10 +667,6 @@
             const image = DATASET.getImageByAnnotation(annotation);
             this.displayImage(image);
             
-            let maskIdx = image.getAnnotationIdx(annotation);
-            let maskCount = image.getAnnotationsCount();
-            MASK_IDX.innerText = `${maskIdx} / ${maskCount}`;
-
             CATEGORY.value = annotation.getCategory();
             CAPTION.value = annotation.getCaption();
             
@@ -679,7 +675,9 @@
             
             let bbox = annotation.getBbox();
             this.displayBbox(bbox[0], bbox[1], bbox[2], bbox[3]);
-
+            
+            let maskIdx = image.getAnnotationIdx(annotation);
+            let maskCount = image.getAnnotationsCount();
             this.displayMaskIndex(maskIdx+1, maskCount);
 
             let imageIdx = DATASET.getImageIdx(image);
