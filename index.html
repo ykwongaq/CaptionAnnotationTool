@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://cdn.bootcss.com/FileSaver.js/2014-11-29/FileSaver.js"></script>
-    <script src="./js/Annotation.js"></script>
-    <script src="./js/Image.js"></script>
-    <script src="./js/Dataset.js"></script>
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <style>
         input:checked + label {
@@ -45,14 +42,24 @@
                     <div id="imgName" class="mt-1 py-2 text-center text-gray-500  sm:mt-0 sm:text-center"></div>
                 </div>
 
-                <div class=" p-5" style="width: 40%; height: 500px;">
+                <div class=" p-6" style="width: 40%; height: 500px;">
 
+                    <div class="flex flex-row">
+                        <div class="flex flex-col justify-between sm:text-center ">
+                            <div class="font-semibold text-gray-900">Mask</div>
+                            <div id="maskIndex" class="mt-1 py-2 text-center text-gray-500  sm:mt-0 sm:text-center">0 / 0</div>              
+                        </div>
+                        <div class="flex flex-col justify-between sm:text-center ml-10">
+                            <div class="font-semibold text-gray-900">Image</div>
+                            <div id="imageIndex" class="mt-1 py-2 text-center text-gray-500  sm:mt-0 sm:text-center">0 / 0</div>              
+                        </div>
+                    </div>
+
+                    
                     <div class="flex flex-col">
-                        <div class="font-semibold text-gray-900">Mask</div>
                         <div class="flex flex-row justify-between sm:text-center">
-                            <div id="maskCount" class="mt-1 py-2 text-center text-gray-500  sm:mt-0 sm:text-center">0 / 0</div>
                             <button onclick="handlePreviousMask()" type="button" class=" text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">PrevMask</button>
-                            <button onclick="handleBboxVis()" type="button" class=" text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Toggle</button>
+                            <button onclick="handleToggleBbox()" type="button" class=" text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Toggle</button>
                             <button onclick="handleNextMask()" type="button" class="bg-bg text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">NextMask</button>                
                         </div>
                     </div>
@@ -101,30 +108,516 @@
             <button onclick="handlePrevious()" type="button" class="bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Previous</button>
             <button onclick="saveJsonFile()" type="button" class="bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">SaveAndExport</button>
             <button onclick="handleContinue()" type="button" class="bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Continue</button>
+            <!-- <button onclick="handleTest()" type="button" class="bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Test</button> -->
             <button onclick="handleNext()" type="button" class="bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Next</button>
         </div>
         <div>
-            <dialog id="notificationSelect"  class="mx-auto max-w-2xl sm:text-center m-2 p-5 border-2 border-black rounded-md" style="top:50%" close>
-                <p class="m-2 p-5 text-sm  font-semibold text-gray-900">You must chose positive or negative!</p>
+            <dialog id="notificationDialog" class="mx-auto max-w-2xl sm:text-center m-2 p-5 border-2 border-black rounded-md" style="top:50%" close>
+                <p id="notificationMessage" class="m-2 p-5 text-sm  font-semibold text-gray-900"></p>
                 <div class="divide-y divide-dashed"></div>
-                <button onclick="closeDialog('notificationSelect')" class="bg-bg font-bold text-center border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Confirm</button>
-            </dialog>
-            <dialog id="notificationFinish"  class="mx-auto max-w-2xl sm:text-center m-2 p-5 rounded-3xl ring-1 ring-gray-200" style="top:50%" close>
-                You have finished! Remember to save the result!
-                <div class="divide-y divide-dashed"></div>
-                <button onclick="closeDialog('notificationFinish')" type="button" class="bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Confirm</button>
-            </dialog>
-            <dialog id="notificationNoContinue"  class="mx-auto max-w-2xl sm:text-center m-2 p-5 rounded-3xl ring-1 ring-gray-200" style="top:50%" close>
-                All the masks of this image have been labeled. Please go on to next subset.
-                <div class="divide-y divide-dashed"></div>
-                <button onclick="closeDialog('notificationNoContinue')" type="button" class="bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Confirm</button>
+                <button onclick="closeDialog()" class="bg-bg font-bold text-center border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Confirm</button>
             </dialog>
         </div>
     </div>
+
     <script>
+        "strict mode";
+
+        /**
+         * Caption is correct
+         */
+        const POSITIVE = 0;
+
+        /**
+         * Caption is incorrect
+         */
+        const NEGATIVE = 1;
+
+        /**
+         * Caption is not labelled
+         */
+        const NOT_LABELLED = 2;
+        
+
+        // Dom elements
+        const IMG = document.getElementById("img")
+        const IMG_CONTAINER = document.getElementById("imgContainer")
+        const IMG_NAME = document.getElementById("imgName")
+        const MASK_IDX = document.getElementById("maskIndex")
+        const IMAGE_IDX = document.getElementById("imageIndex")
+        const CATEGORY = document.getElementById("category")
+        const CAPTION = document.getElementById("caption")
+        const RADIO_POS = document.getElementById("radio_pos")
+        const RADIO_NEG = document.getElementById("radio_neg")
+        const BBOX = document.getElementById("bbox")
+        const NOTIFICATION_DIALOG = document.getElementById("notificationDialog")
+        const NOTIFICATION_MESSAGE = document.getElementById("notificationMessage")
+        var showLabel = true;
+
+        /**
+         * Annotation store the data of an annotation.
+         */
+        class Annotation {
+            /**
+             * Constructor
+             * @param {JSON} annoData
+             */
+            constructor(annoData) {
+                this.jsonData = annoData;
+            }
+
+            /**
+             * Get bounding box of the annotation. [x, y, width, height] in term of pixels.
+             * @returns {Array} The list of points of the annotation.
+             */
+            getBbox() {
+                return this.jsonData.bbox;
+            }
+
+            /**
+             * Get the id of the image that the annotation belongs to.
+             * @returns {number} The id of the image.
+             
+            */
+            getImageId() {
+                return this.jsonData.image_id;
+            }
+
+            /**
+             * Get the id of the annotation.
+             */
+            getId() {
+                return this.jsonData.id;
+            }
+
+            /**
+             * Get the caption of the annotation.
+             * @returns {string} The caption of the annotation.
+             */
+            getCaption() {
+                return this.jsonData.caption;
+            }
+
+            /**
+             * Set a new caption for annotaiton
+             * @param {string} caption
+             */
+            setCaption(caption) {
+                this.jsonData.caption = caption;
+            }
+
+            /**
+             * Get the label of the annotation.
+             * @returns {number} The label of the annotation.
+             */
+            getLabel() {
+                return this.jsonData.label;
+            }
+
+            /**
+             * Set the label of the annotation.
+             * @param {number} label
+             */
+            setLabel(label) {
+                this.jsonData.label = label;
+            }
+
+            /**
+             * Get the category of the annotation.
+             * @returns {string} The category of the annotation.
+             */
+            getCategory() {
+                return this.jsonData.category;
+            }
+        }
+
+        /**
+         * It is the name of folder that store the data.
+         */
+        const DATA_FOLDER = "data";
+
+        /**
+         * Image store the data of an image.
+         */
+        class Image {
+            /**
+             * Constructor
+             * @param {JSON} imageData
+             * @param {JSON} annoDatas
+             */
+            constructor(imageData, annoDatas) {
+                this.jsonData = imageData;
+                let id = this.jsonData.id;
+                this.annotations = [];
+                for (const annoData of annoDatas) {
+                    console.assert(
+                        annoData.image_id === id,
+                        "Annotation does not belong to image. Annotation ID: " +
+                            annoData.id +
+                            ", Image ID: " +
+                            id
+                    );
+                    this.annotations.push(new Annotation(annoData));
+                }
+            }
+
+            /**
+             * Get the id of the image.
+             * @returns {number} The id of the image.
+             */
+            getId() {
+                return this.jsonData.id;
+            }
+
+            /**
+             * Relative path to the image.
+             * @returns {string} The path of the image.
+             */
+            getPath() {
+                return `${DATA_FOLDER}/${this.getFileName()}`;
+            }
+
+            /**
+             * Get the filename of the image.
+             * @returns {string} The name of the image file.
+             */
+            getFileName() {
+                return this.jsonData.file_name;
+            }
+
+            /**
+             * Get annotation list
+             * @returns {Array} The list of annotations of the image.
+             */
+            getAnnotations() {
+                return this.annotations;
+            }
+
+            /**
+             * Count how many annotation in this image.
+             * @returns {number} The number of annotations of the image.
+             */
+            getAnnotationsCount() {
+                return this.annotations.length;
+            }
+
+            /**
+             * Get the width of the image
+             * @returns {number} The width of the image.
+             */
+            getWidth() {
+                return this.jsonData.width;
+            }
+
+            /**
+             * Get the height of the image
+             * @returns {number} The height of the image.
+             */
+            getHeight() {
+                return this.jsonData.height;
+            }
+
+            /**
+             * Get the index of the annotation in the image. (The i-th annotation in this image)
+             * @param {Annotation} annotation
+             * @returns {number} The index of the annotation in the image.
+             */
+            getAnnotationIdx(annotation) {
+                return this.annotations.indexOf(annotation);
+            }
+
+            /**
+             * Check if the annotation is the last annotation of the image.
+             * @param {Annotation} annotation
+             * @returns {boolean} True if the annotation is the last annotation of the image.
+             */
+            isLastAnnotation(annotation) {
+                return this.annotations[this.annotations.length - 1] === annotation;
+            }
+
+            /**
+             * Get the first annotaiton in this image.
+             * @returns {Annotation} The first annotation of the image.
+             */
+            getFirstAnnotation() {
+                return this.annotations[0];
+            }
+
+            /**
+             * Get the last annotation in this image.
+             * @returns {Annotation} The last annotation of the image.
+             */
+            getLastAnnotation() {
+                return this.annotations[this.annotations.length - 1];
+            }
+        }
+
+        
+        /**
+         * Dataset store a list of images loaded from json file.
+         * It is in singleton pattern.
+         */
+        class Dataset {
+            /**
+             * Constructor
+             */
+            constructor() {
+                this.images = [];
+            }
+
+            /**
+             * Get the singleton instance of the dataset.
+             * @returns {Dataset} The instance of the dataset.
+             */
+            static getInstance() {
+                if (!this.instance) {
+                    this.instance = new Dataset();
+                }
+                return this.instance;
+            }
+
+            /**
+             * Convert json string to dataset object.
+             * @param {string} json The json string that contains the data of the dataset.
+             */
+            parseJson(json) {
+                const jsonData = JSON.parse(json);
+                const annoDatas = jsonData.annotations;
+                for (const imageJson of jsonData.images) {
+                    const relatedAnnotations = annoDatas.filter(
+                        (annoData) => annoData.image_id === imageJson.id
+                    );
+                    this.images.push(new Image(imageJson, relatedAnnotations));
+                }
+                this.categoriesData = jsonData.categories;
+            }
+
+            /**
+             * Get the image by its id.
+             * @param {number} annoId
+             * @returns {Image} The image object. Or else return null.
+             */
+            getImageByAnnotationId(annoId) {
+                for (const image of this.images) {
+                    for (const anno of image.annotations) {
+                        if (anno.getId() === annoId) {
+                            return image;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            /**
+             * Get the image that contains the annotation.
+             * @param {Annotation} annotation
+             * @returns {Image} The image object. Or else return null.
+             */
+            getImageByAnnotation(annotation) {
+                return this.getImageByAnnotationId(annotation.getId());
+            }
+
+            /**
+             * Get the list of image
+             * @returns {Array} The list of images.
+             */
+            getImages() {
+                return this.images;
+            }
+
+            /**
+             * Count the number of images
+             * @returns {number} The number of images.
+             */
+            getImageCount() {
+                this.images.length;
+            }
+
+            /**
+             * Get the first image of the dataset.
+             * @returns {Image} The first image of the dataset.
+             */
+            getFirstImage() {
+                return this.images[0];
+            }
+
+            /**
+             * Get the last image of the dataset.
+             * @returns {Image} The last image of the dataset.
+             * */
+            getLastImage() {
+                return this.images[this.images.length - 1];
+            }
+
+            /**
+             * Get the index of the image in list.
+             * @param {Image} image
+             * @returns {number} The index of the image in the dataset.
+             */
+            getImageIdx(image) {
+                return this.images.indexOf(image);
+            }
+
+            /**
+             * Get the next annotation based on the input annotation.
+             * If there are more annotations in the image, return the next one. (case 1)
+             * If there are no more annotations in the image, return the first annotation of the next image. (case 2)
+             * If there is no more image and annotation, return null. (case 3)
+             * @param {Annotation} annotation The input annotation.
+             * @returns {Annotation} The next annotation of the input annotation.
+             */
+            getNextAnnotation(annotation) {
+                const image = this.getImageByAnnotation(annotation);
+                const idx = image.annotations.indexOf(annotation);
+
+                // Case 1
+                if (!image.isLastAnnotation(annotation)) {
+                    return image.annotations[idx + 1];
+                }
+
+                const imageIdx = this.images.indexOf(image);
+                if (imageIdx < this.images.length - 1) {
+                    // Case 2
+                    return this.images[imageIdx + 1].annotations[0];
+                }
+
+                // Case 3
+                return null;
+            }
+
+            /**
+             * Get previous annotation based on the input annotation.
+             * If there are previous annotations in the image, return the previous one. (case 1)
+             * If there are no previous annotations in the image, return the last annotation of the previous image. (case 2)
+             * If there is no more image and annotation, return null. (case 3)
+             * @param {Anntoation} annotation
+             * @returns {Annotation} The previous annotation of the input annotation.
+             */
+            getPrevAnnotation(annotation) {
+                const image = this.getImageByAnnotation(annotation);
+                const idx = image.annotations.indexOf(annotation);
+                // Case 1
+                if (idx > 0) {
+                    return image.annotations[idx - 1];
+                }
+
+                const imageIdx = this.getImageIdx(image);
+                if (imageIdx > 0) {
+                    // Case 2
+                    return this.images[imageIdx - 1].getLastAnnotation();
+                }
+
+                // Case 3
+                return null;
+            }
+
+            /**
+             * Get the next image based on the given image or annotation.
+             * @param {Image || Annotation} input Input can be either an image or an annotation.
+             * @returns {Image} The next image of the input.
+             */
+            getNextImage(input) {
+                if (input instanceof Image) {
+                    return this.getNextImageByImage(input);
+                } else if (input instanceof Annotation) {
+                    return this.getNextImageByAnnotation(input);
+                } else {
+                    throw new Error("Input must be either an image or an annotation.");
+                }
+            }
+
+            /**
+             * Get the previous image based on the given image or annotation.
+             * @param {Image || Annotation} input Input can be either an image or an annotation.
+             * @returns {Image} The previous image of the input.
+             */
+            getPrevImage(input) {
+                if (input instanceof Image) {
+                    return this.getPrevImageByImage(input);
+                } else if (input instanceof Annotation) {
+                    return this.getPrevImageByAnnotation(input);
+                } else {
+                    throw new Error("Input must be either an image or an annotation.");
+                }
+            }
+
+            /**
+             * Get the next image based on the given image.
+             * If there are more image, return this next one. (case 1)
+             * If there are no more image, return null. (case 2)
+             * @param {Image} image Input image.
+             * @returns {Image} The next image of the input image.
+             */
+            getNextImageByImage(image) {
+                const idx = this.getImageIdx(image);
+                if (idx < this.images.length - 1) {
+                    return this.images[idx + 1];
+                }
+                return null;
+            }
+
+            /**
+             * Get the previous image based on the given image.
+             * If there are previous image, return this previous one. (case 1)
+             * If there are no previous image, return null. (case 2)
+             * @param {Image} image Input image.
+             * @returns {Image} The previous image of the input image.
+             */
+            getPrevImageByImage(image) {
+                const idx = this.getImageIdx(image);
+                if (idx > 0) {
+                    return this.images[idx - 1];
+                }
+                return null;
+            }
+
+            /**
+             * Get the next image based on the given annotation.
+             * If there are more image, then directly return the next image. (case 1)
+             * If there are no more image, return null. (case 2)
+             * @param {Annotation} annotaiton Input Annotation
+             * @returns {Image} The next image of the input annotation.
+             */
+            getNextImageByAnnotation(annotaiton) {
+                const image = this.getImageByAnnotation(annotaiton);
+                return this.getNextImageByImage(image);
+            }
+
+            /**
+             * Get the previous image based on the given annotation.
+             * If there are previous image, then directly return the previous image. (case 1)
+             * If there are no previous image, return null. (case 2)
+             * @param {Annotation} annotaiton Input Annotation
+             * @returns {Image} The previous image of the input annotation.
+             */
+            getPrevImageByAnnotation(annotaiton) {
+                const image = this.getImageByAnnotation(annotaiton);
+                return this.getPrevImageByImage(image);
+            }
+
+            /**
+             * Export the dataset to json format.
+             * The json will contain list of images data, list of annotaitons data and list of categories data.
+             * @returns {string} The json string.
+             */
+            exportJson() {
+                const images = this.images.map((image) => image.jsonData);
+                const annotations = this.images.flatMap((image) =>
+                    image.annotations.map((anno) => anno.jsonData)
+                );
+                return JSON.stringify({
+                    images,
+                    annotations,
+                    categories: this.categoriesData,
+                });
+            }
+        }
         // Singleton dataset
         const DATASET = Dataset.getInstance();
 
+        // Currently displayed annotation
+        var currenAnnotation = null;
+        
         // Load the json file
         const FILE_INPUT = document.getElementById('file-input');
         FILE_INPUT.addEventListener('change', function(e) {
@@ -132,11 +625,269 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 DATASET.parseJson(e.target.result);
+                currenAnnotation = DATASET.getFirstImage().getFirstAnnotation();
+                displayAnnotation(currenAnnotation);
             }
             reader.readAsText(file);
             // Hide the upload file container after loading the json file
             document.getElementById('uploadFileContainer').style.display = 'none';
         });
+
+        function handleTest() {
+            console.log(DATASET);
+        }
+
+        /**
+         * Save json file
+         */
+        function saveJsonFile() {
+            const json = DATASET.exportJson();
+            const blob = new Blob([json], {type: "text/plain;charset=utf-8"});
+            saveAs(blob, "result.json");
+        }
+
+        /**
+         * Display given the anntoattion
+         * @param {Annotation} annotation
+         */
+        function displayAnnotation(annotation) {
+            const image = DATASET.getImageByAnnotation(annotation);
+            this.displayImage(image);
+            
+            let maskIdx = image.getAnnotationIdx(annotation);
+            let maskCount = image.getAnnotationsCount();
+            MASK_IDX.innerText = `${maskIdx} / ${maskCount}`;
+
+            CATEGORY.value = annotation.getCategory();
+            CAPTION.value = annotation.getCaption();
+            
+            let label = annotation.getLabel();
+            this.displayLable(label);
+            
+            let bbox = annotation.getBbox();
+            this.displayBbox(bbox[0], bbox[1], bbox[2], bbox[3]);
+
+            this.displayMaskIndex(maskIdx+1, maskCount);
+
+            let imageIdx = DATASET.getImageIdx(image);
+            let imageCount = DATASET.getImages().length;
+            this.displayImageIndex(imageIdx+1, imageCount);
+        }
+
+        /**
+         * Display given image
+         * @param {Image} image
+         */
+        function displayImage(image) {
+            IMG.src = image.getPath();
+            IMG_NAME.innerText = image.getFileName();
+        }
+        
+        /**
+         * Display label
+         * @param {number} label
+         */
+        function displayLable(label) {
+            if (label === POSITIVE) {
+                RADIO_POS.checked = true;
+                RADIO_NEG.checked = false;
+            } else if (label === NEGATIVE) {
+                RADIO_POS.checked = false;
+                RADIO_NEG.checked = true;
+            } else {
+                RADIO_POS.checked = false;
+                RADIO_NEG.checked = false;
+            }
+        }
+
+        /**
+         * Set annotation to be current anntation
+         */
+        function setCurrentAnnotation(annotation) {
+            this.currenAnnotation = annotation;
+        }
+
+        /**
+         * Get the previous annotation
+         */
+        function handlePreviousMask() {
+            if (currenAnnotation) {
+                
+            }
+
+        }
+
+        /**
+         * Display the bounding box of the annotation
+         * @param {number} x The x coordinate of the bounding box.
+         * @param {number} y The y coordinate of the bounding box.
+         * @param {number} w The width of the bounding box.
+         * @param {number} h The height of the bounding box.
+         */
+        function displayBbox(x, y, w, h) {
+
+            // let image = DATASET.getImageByAnnotation(this.currenAnnotation);
+            // let imgWidth = image.getWidth();
+            // let imgHeight = image.getHeight();
+            // let containerWidth = IMG_CONTAINER.offsetWidth;
+            // let containerHeight = IMG_CONTAINER.offsetHeight;
+
+            // let box_x = x / imgWidth * containerWidth;
+            // let box_y = y / imgHeight * containerHeight;
+            // let box_w = w / imgWidth * containerWidth;
+            // let box_h = h / imgHeight * containerHeight;
+            
+            // box_x = Math.floor(box_x);
+            // box_y = Math.floor(box_y);
+            // box_w = Math.floor(box_w);
+            // box_h = Math.floor(box_h);
+
+            let box_x = x;
+            let box_y = y;
+            let box_w = w;
+            let box_h = h;
+
+            BBOX.style.left = box_x + "px";
+            BBOX.style.top = box_y + "px";
+            BBOX.style.width = box_w + "px";
+            BBOX.style.height = box_h + "px";
+
+            console.log("bbox ", box_x, box_y, box_w, box_h);
+        }
+
+        /**
+         * Toggle the display of the bounding box
+         */
+        function handleToggleBbox() {
+            showLabel = !showLabel;
+            if (showLabel) {
+                BBOX.style.display = "block";
+            } else {
+                BBOX.style.display = "none";
+            }
+        }
+        
+        /**
+         * Get the previous mask
+         */
+        function handlePreviousMask() {
+            this.autoSave();
+            let prevAnno = DATASET.getPrevAnnotation(currenAnnotation);
+            if (prevAnno) {
+                currenAnnotation = prevAnno;
+                displayAnnotation(currenAnnotation);
+            } else {
+                this.showDialog("This the first annotation of the first image.");
+            }
+        }
+
+        /**
+         * Get the next mask.
+         * If the current annotation is not labeled, then pop up message to remind user to label the annotation. 
+         */
+        function handleNextMask() {
+            if (currenAnnotation.getLabel() === NOT_LABELLED) {
+                this.showDialog("Please label the current annotation before moving to the next one.");
+                return;
+            }
+            this.autoSave();
+            let nextAnno = DATASET.getNextAnnotation(currenAnnotation);
+            if (nextAnno) {
+                currenAnnotation = nextAnno;
+                displayAnnotation(currenAnnotation);
+            } else {
+                this.showDialog("This the last annotation of the last image.");
+            }
+        }
+
+        /**
+         * Pop up a dialog to display given message.
+         * @param {string} message The message to be displayed.
+         */
+        function showDialog(message) {
+            NOTIFICATION_MESSAGE.innerText = message;
+            NOTIFICATION_DIALOG.showModal();
+        }  
+        
+        /**
+         * Get the previous image
+         */
+        function handlePrevious() {
+            this.autoSave();
+            let prevImage = DATASET.getPrevImage(currenAnnotation);
+            if (prevImage) {
+                currenAnnotation = prevImage.getFirstAnnotation();
+                displayAnnotation(currenAnnotation);
+            } else {
+                this.showDialog("This the first image.");
+            }
+        }
+
+        /**
+         * Get the next annotation if there are any, if not, then get the next image.
+         */
+        function handleNext() {
+            if (currenAnnotation.getLabel() === NOT_LABELLED) {
+                this.showDialog("Please label the current annotation before moving to the next one.");
+                return;
+            }
+            this.autoSave();
+            this.handleNextMask();
+        }
+
+        function displayMaskIndex(maskIdx, maskCount) {
+            MASK_IDX.innerText = `${maskIdx} / ${maskCount}`;
+        }
+
+        function displayImageIndex(imageIdx, imageCount) {
+            IMAGE_IDX.innerText = `${imageIdx} / ${imageCount}`;
+        }
+
+        /**
+         * Continue to the first annotation that is not labeled.
+         * If there are no unlabeled annotation, then just jump to the last annotation.
+         */
+        function handleContinue() {
+            this.autoSave();
+            for (const image of DATASET.getImages()) {
+                for (const annotation of image.getAnnotations()) {
+                    if (annotation.getLabel() === NOT_LABELLED) {
+                        currenAnnotation = annotation;
+                        displayAnnotation(currenAnnotation);
+                        return;
+                    }
+                }
+            }
+            currenAnnotation = DATASET.getLastImage().getLastAnnotation();
+            displayAnnotation(currenAnnotation);
+            this.showDialog("All annotations are labeled. Please save the json file and continue to next dataset");
+        }
+
+        /**
+         * Close the dialog
+         */
+        function closeDialog() {
+            NOTIFICATION_DIALOG.close();
+        }
+
+        function getLabelFromRadio() {
+            if (RADIO_POS.checked) {
+                return POSITIVE;
+            } else if (RADIO_NEG.checked) {
+                return NEGATIVE;
+            } else {
+                return NOT_LABELLED;
+            }
+        }
+
+        /**
+         * Save the current annotation to the dataset.
+         * The annotation include the category, caption, and label.
+         */
+        function autoSave() {
+            currenAnnotation.setCaption(CAPTION.value);
+            currenAnnotation.setLabel(getLabelFromRadio());
+        }
 
     </script>
 </body>
