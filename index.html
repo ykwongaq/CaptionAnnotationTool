@@ -177,6 +177,7 @@
              */
             constructor(annoData) {
                 this.jsonData = annoData;
+                this.jsonData.category = this.processCategory(this.jsonData.category);
             }
 
             /**
@@ -241,6 +242,47 @@
              */
             getCategory() {
                 return this.jsonData.category;
+            }
+
+            /**
+             * Post-processing the catogray data to make it more readable.
+             * @param {string} catagory
+             * @returns {string} The processed category.
+             */
+            processCategory(catagory) {
+                // Find the index of first uppercase letter
+                const idx = catagory.search(/[A-Z]/);
+                if (idx === -1) {
+                    const words = catagory.split(" ");
+                    const first_word = words[0];
+
+                    let duplicateIndx = -1;
+                    for (let i=1; i<words.length; i++) {
+                        if (words[i] === first_word) {
+                            duplicateIndx = i;
+                            // Join the words up to the first occurrence of the first word
+                            catagory = words.slice(0, duplicateIndx).join(" ");
+                            break;
+                        }
+                    }
+
+                    if (duplicateIndx === -1) {
+                        if (catagory.endsWith(".jpg") || 
+                            catagory.endsWith(".png") || 
+                            catagory.endsWith(".jpeg") || 
+                            category.endsWith(".PNG") || 
+                            category.endsWith(".JPG")) {
+                            catagory = catagory.slice(0, -1).join(" ");
+                            return catetory;
+                        }
+                    } else {
+                        // Keep the part before first uppercase letter.
+                        return catagory.slice(0, idx);
+                    }
+                } else {
+                    // If there are uppercase letter, just keep the part after the first uppercase letter.
+                    return catagory.slice(0, idx);
+                }
             }
         }
 
