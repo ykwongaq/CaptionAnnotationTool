@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://cdn.bootcss.com/FileSaver.js/2014-11-29/FileSaver.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <style>
         input:checked + label {
@@ -246,14 +247,14 @@
 
             /**
              * Post-processing the catogray data to make it more readable.
-             * @param {string} catagory
+             * @param {string} category
              * @returns {string} The processed category.
              */
-            processCategory(catagory) {
+            processCategory(category) {
                 // Find the index of first uppercase letter
-                const idx = catagory.search(/[A-Z]/);
+                const idx = category.search(/[A-Z]/);
                 if (idx === -1) {
-                    const words = catagory.split(" ");
+                    const words = category.split(" ");
                     const first_word = words[0];
 
                     let duplicateIndx = -1;
@@ -261,27 +262,30 @@
                         if (words[i] === first_word) {
                             duplicateIndx = i;
                             // Join the words up to the first occurrence of the first word
-                            catagory = words.slice(0, duplicateIndx).join(" ");
+                            category = words.slice(0, duplicateIndx).join(" ");
                             break;
                         }
                     }
 
                     if (duplicateIndx === -1) {
-                        if (catagory.endsWith(".jpg") || 
-                            catagory.endsWith(".png") || 
-                            catagory.endsWith(".jpeg") || 
+                        if (category.endsWith(".jpg") || 
+                            category.endsWith(".png") || 
+                            category.endsWith(".jpeg") || 
                             category.endsWith(".PNG") || 
                             category.endsWith(".JPG")) {
-                            catagory = catagory.slice(0, -1).join(" ");
-                            return catetory;
+                            words.pop()
+                            category = words.join(" ");
+                            return category;
+                        } else {
+                            return category;
                         }
                     } else {
                         // Keep the part before first uppercase letter.
-                        return catagory.slice(0, idx);
+                        return category.slice(0, idx);
                     }
                 } else {
                     // If there are uppercase letter, just keep the part after the first uppercase letter.
-                    return catagory.slice(0, idx);
+                    return category.slice(0, idx);
                 }
             }
         }
@@ -689,13 +693,30 @@
         });
 
         function handleTest() {
-            console.log(DATASET);
+            test_strings = [
+                "abalone Google 0000.jpg",
+                "octopus cyanea",
+                "abalone 000.jpg",
+                "aeolid nudibranchs Aeolid nudibranchs1.jpg",
+                "juvenile emperor angelfish juvenile emperor angelfish1.jpg",
+            ];
+
+            for (const test_string of test_strings) {
+                console.log(Annotation.processCategory(test_string));
+            }
         }
 
         /**
          * Save json file
          */
         function saveJsonFile() {
+            this.autoSave();
+            /*
+            if (currenAnnotation.getLabel() === NOT_LABELLED) {
+                this.showDialog("Please label the current annotation before saving the json file.");
+                return;
+            }
+            */
             const json = DATASET.exportJson();
             const blob = new Blob([json], {type: "text/plain;charset=utf-8"});
             saveAs(blob, "result.json");
@@ -839,11 +860,11 @@
          * If the current annotation is not labeled, then pop up message to remind user to label the annotation. 
          */
         function handleNextMask() {
+            this.autoSave();
             if (currenAnnotation.getLabel() === NOT_LABELLED) {
                 this.showDialog("Please label the current annotation before moving to the next one.");
                 return;
             }
-            this.autoSave();
             let nextAnno = DATASET.getNextAnnotation(currenAnnotation);
             if (nextAnno) {
                 currenAnnotation = nextAnno;
@@ -880,11 +901,11 @@
          * Get the next annotation if there are any, if not, then get the next image.
          */
         function handleNext() {
+            this.autoSave();
             if (currenAnnotation.getLabel() === NOT_LABELLED) {
                 this.showDialog("Please label the current annotation before moving to the next one.");
                 return;
             }
-            this.autoSave();
             this.handleNextMask();
         }
 
