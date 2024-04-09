@@ -179,6 +179,9 @@
             constructor(annoData) {
                 this.jsonData = annoData;
                 this.jsonData.category = this.processCategory(this.jsonData.category);
+                if (!this.jsonData.hasOwnProperty("label")) {
+                    this.jsonData.label = NOT_LABELLED;
+                }
             }
 
             /**
@@ -782,16 +785,6 @@
         }
 
         /**
-         * Get the previous annotation
-         */
-        function handlePreviousMask() {
-            if (currenAnnotation) {
-                
-            }
-
-        }
-
-        /**
          * Display the bounding box of the annotation
          * @param {number} x The x coordinate of the bounding box.
          * @param {number} y The y coordinate of the bounding box.
@@ -966,4 +959,3 @@
     </script>
 </body>
 </html>
-
