@@ -22,6 +22,9 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for a "pop" effect */
             font-size: 20px; /* Larger font size for visibility */
         }
+        .top-button {
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -46,8 +49,8 @@
 
             <div class=" flex justify-between mx-auto max-w-3xl sm:mt-6 lg:mx-0 lg:flex lg:max-w-none" style="height: 550px;">
 
-                <div id="imgContainer" class="relative rounded-sm ring-1 ring-gray-200 sm:text-center" style="width: 60%; height: 550px;">
-                    <img id="img" style="display: block;" src="">
+                <div id="imgContainer" class="relative rounded-sm ring-1 ring-gray-200 sm:text-center max-width:100% overflow:hidden" style="width: 60%; height: 550px;">
+                    <img id="img" style="display: block; height: 100%; width: 100%;" src="">
                     <div id="bbox" class="absolute border-2 border-red-400"></div>
                     <div id="imgName" class="mt-1 py-2 text-center text-gray-500  sm:mt-0 sm:text-center"></div>
                 </div>
@@ -68,9 +71,9 @@
                     
                     <div class="flex flex-col">
                         <div class="flex flex-row justify-between sm:text-center">
-                            <button onclick="handlePreviousMask()" type="button" class=" text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">PrevMask</button>
-                            <button onclick="handleToggleBbox()" type="button" class=" text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Toggle</button>
-                            <button onclick="handleNextMask()" type="button" class="bg-bg text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">NextMask</button>                
+                            <button onclick="handlePreviousMask()" type="button" class="top-button text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">PrevMask</button>
+                            <button onclick="handleToggleBbox()" type="button" class="top-button text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Toggle</button>
+                            <button onclick="handleNextMask()" type="button" class="top-button bg-bg text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">NextMask</button>                
                         </div>
                     </div>
 
@@ -116,11 +119,11 @@
         </div>
         
         <div class="flex items-center justify-between mt-5 border-t border-gray-200 bg-white px-4 py-5 sm:px-6">
-            <button onclick="handlePrevious()" type="button" class="bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Previous</button>
-            <button onclick="saveJsonFile()" type="button" class="bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">SaveAndExport</button>
-            <button onclick="handleContinue()" type="button" class="bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Continue</button>
+            <button onclick="handlePrevious()" type="button" class="top-button bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Previous</button>
+            <button onclick="saveJsonFile()" type="button" class="top-button bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">SaveAndExport</button>
+            <button onclick="handleContinue()" type="button" class="top-button bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Continue</button>
             <!-- <button onclick="handleTest()" type="button" class="bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Test</button> -->
-            <button onclick="handleNext()" type="button" class="bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Next</button>
+            <button onclick="handleNext()" type="button" class="top-button bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Next</button>
         </div>
         <div class="reminder">
             <p>Remember to save the result before leaving!</p>
@@ -793,33 +796,36 @@
          */
         function displayBbox(x, y, w, h) {
 
-            // let image = DATASET.getImageByAnnotation(this.currenAnnotation);
-            // let imgWidth = image.getWidth();
-            // let imgHeight = image.getHeight();
-            // let containerWidth = IMG_CONTAINER.offsetWidth;
-            // let containerHeight = IMG_CONTAINER.offsetHeight;
-
-            // let box_x = x / imgWidth * containerWidth;
-            // let box_y = y / imgHeight * containerHeight;
-            // let box_w = w / imgWidth * containerWidth;
-            // let box_h = h / imgHeight * containerHeight;
-            
-            // box_x = Math.floor(box_x);
-            // box_y = Math.floor(box_y);
-            // box_w = Math.floor(box_w);
-            // box_h = Math.floor(box_h);
-
             let box_x = x;
             let box_y = y;
             let box_w = w;
             let box_h = h;
 
-            BBOX.style.left = box_x + "px";
-            BBOX.style.top = box_y + "px";
-            BBOX.style.width = box_w + "px";
-            BBOX.style.height = box_h + "px";
+            // Get the image and image container dimensions
+            const image = DATASET.getImageByAnnotation(currenAnnotation);
+            const imageWidth = image.getWidth();
+            const imageHeight = image.getHeight();
+            const containerWidth = IMG_CONTAINER.clientWidth;
+            const containerHeight = IMG_CONTAINER.clientHeight;
 
-            console.log("bbox ", box_x, box_y, box_w, box_h);
+            // Calculate the new xywh values based on the dimensions
+            const newX = (x / imageWidth) * containerWidth;
+            const newY = (y / imageHeight) * containerHeight;
+            const newW = (w / imageWidth) * containerWidth;
+            const newH = (h / imageHeight) * containerHeight;
+            
+            // Convert absolute coordinates to percentages
+            const newXPercent = (newX / containerWidth) * 100;
+            const newYPercent = (newY / containerHeight) * 100;
+            const newWPercent = (newW / containerWidth) * 100;
+            const newHPercent = (newH / containerHeight) * 100;
+
+            // Set the style of the bounding box using percentages
+            BBOX.style.left = newXPercent + "%";
+            BBOX.style.top = newYPercent + "%";
+            BBOX.style.width = newWPercent + "%";
+            BBOX.style.height = newHPercent + "%";
+
         }
 
         /**
