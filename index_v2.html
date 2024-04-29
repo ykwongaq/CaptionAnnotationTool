@@ -98,15 +98,21 @@
                     <div class="flex items-center justify-center m-5">
                         <form class="grid grid-cols-3 gap-2 w-full max-w-screen-sm">
                             <div>
-                                <input class="hidden" id="radio_pos" type="radio" name="labelposneg" value="pos">
-                                <label class="flex flex-col p-4 border-2 border-gray-200 rounded-md cursor-pointer" for="radio_pos">
-                                    <span class="text-xs font-semibold uppercase">Positive</span>
+                                <input class="hidden" id="radio_refined" type="radio" name="annotation_label" value="refined">
+                                <label class="flex flex-col p-4 border-2 border-gray-200 rounded-md cursor-pointer" for="radio_refined">
+                                    <span class="text-xs font-semibold uppercase">Refined Positive</span>
                                 </label>
                             </div>
                             <div>
-                                <input class="hidden" id="radio_neg" type="radio" name="labelposneg" value="neg">
+                                <input class="hidden" id="radio_pos" type="radio" name="annotation_label" value="pos">
+                                <label class="flex flex-col p-4 border-2 border-gray-200 rounded-md cursor-pointer" for="radio_pos">
+                                    <span class="text-xs font-semibold uppercase">Generated Positive</span>
+                                </label>
+                            </div>
+                            <div>
+                                <input class="hidden" id="radio_neg" type="radio" name="annotation_label" value="neg">
                                 <label class="flex flex-col p-4 border-2 border-gray-200 rounded-md cursor-pointer" for="radio_neg">
-                                    <span class="text-xs font-semibold uppercase">Negative</span>
+                                    <span class="text-xs font-semibold uppercase">Generated Negative</span>
                                 </label>
                             </div>
                         </form>
@@ -151,25 +157,46 @@
         const NEGATIVE = 1;
 
         /**
+         * Caption is refined
+         */
+        const REFINED = 2;
+
+        /**
          * Caption is not labelled
          */
         const NOT_LABELLED = -1;
         
 
         // Dom elements
-        const IMG = document.getElementById("img")
-        const IMG_CONTAINER = document.getElementById("imgContainer")
-        const IMG_NAME = document.getElementById("imgName")
-        const MASK_IDX = document.getElementById("maskIndex")
-        const IMAGE_IDX = document.getElementById("imageIndex")
-        const CATEGORY = document.getElementById("category")
-        const CAPTION = document.getElementById("caption")
-        const RADIO_POS = document.getElementById("radio_pos")
-        const RADIO_NEG = document.getElementById("radio_neg")
-        const BBOX = document.getElementById("bbox")
-        const NOTIFICATION_DIALOG = document.getElementById("notificationDialog")
-        const NOTIFICATION_MESSAGE = document.getElementById("notificationMessage")
+        const IMG = document.getElementById("img");
+        const IMG_CONTAINER = document.getElementById("imgContainer");
+        const IMG_NAME = document.getElementById("imgName");
+        const MASK_IDX = document.getElementById("maskIndex");
+        const IMAGE_IDX = document.getElementById("imageIndex");
+        const CATEGORY = document.getElementById("category");
+        const CAPTION = document.getElementById("caption");
+        const RADIO_REFINED = document.getElementById("radio_refined");
+        const RADIO_POS = document.getElementById("radio_pos");
+        const RADIO_NEG = document.getElementById("radio_neg");
+        const BBOX = document.getElementById("bbox");
+        const NOTIFICATION_DIALOG = document.getElementById("notificationDialog");
+        const NOTIFICATION_MESSAGE = document.getElementById("notificationMessage");
         var showLabel = true;
+
+        // Json key for negative tags
+        const NEGATIVE_TAGS = "negative_tags";
+        // Negative tags, which will be stored as comma separated string
+        const CALSSIFICATION = "classification";
+        const BACKGROUND = "background"
+        const UNEXISTING = "unexisting"
+        const SPATIAL = "spatial"
+        const ACTION = "action"
+        const SIZE = "size"
+        const COLOR = "color"
+        const SHAPE = "shape"
+        const TEXTURE = "texture"
+        const MATERIAL = "material"
+        const COUNTING = "counting"
 
         /**
          * Annotation store the data of an annotation.
@@ -184,6 +211,9 @@
                 this.jsonData.category = this.processCategory(this.jsonData.category);
                 if (!this.jsonData.hasOwnProperty("label")) {
                     this.jsonData.label = NOT_LABELLED;
+                }
+                if (!this.jsonData.hasOwnProperty(NEGATIVE_TAGS)) {
+                    this.jsonData[NEGATIVE_TAGS] = "";
                 }
             }
 
@@ -681,7 +711,7 @@
         const DATASET = Dataset.getInstance();
 
         // Currently displayed annotation
-        var currenAnnotation = null;
+        var currentAnnotation = null;
         
         // Load the json file
         const FILE_INPUT = document.getElementById('file-input');
@@ -690,8 +720,8 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 DATASET.parseJson(e.target.result);
-                currenAnnotation = DATASET.getFirstImage().getFirstAnnotation();
-                displayAnnotation(currenAnnotation);
+                currentAnnotation = DATASET.getFirstImage().getFirstAnnotation();
+                displayAnnotation(currentAnnotation);
             }
             reader.readAsText(file);
             // Hide the upload file container after loading the json file
@@ -769,16 +799,24 @@
          */
         function displayLable(label) {
             if (label === POSITIVE) {
+                RADIO_REFINED.checked = false;
                 RADIO_POS.checked = true;
                 RADIO_NEG.checked = false;
             } else if (label === NEGATIVE) {
+                RADIO_REFINED.checked = false;
                 RADIO_POS.checked = false;
                 RADIO_NEG.checked = true;
+            } else if (label == REFINED) {
+                RADIO_REFINED.checked = true;
+                RADIO_POS.checked = false;
+                RADIO_NEG.checked = false;
             } else {
+                RADIO_REFINED.checked = false;
                 RADIO_POS.checked = false;
                 RADIO_NEG.checked = false;
             }
         }
+    
 
         /**
          * Set annotation to be current anntation
@@ -802,7 +840,7 @@
             let box_h = h;
 
             // Get the image and image container dimensions
-            const image = DATASET.getImageByAnnotation(currenAnnotation);
+            const image = DATASET.getImageByAnnotation(currentAnnotation);
             const imageWidth = image.getWidth();
             const imageHeight = image.getHeight();
             const containerWidth = IMG_CONTAINER.clientWidth;
@@ -845,10 +883,10 @@
          */
         function handlePreviousMask() {
             this.autoSave();
-            let prevAnno = DATASET.getPrevAnnotation(currenAnnotation);
+            let prevAnno = DATASET.getPrevAnnotation(currentAnnotation);
             if (prevAnno) {
-                currenAnnotation = prevAnno;
-                displayAnnotation(currenAnnotation);
+                currentAnnotation = prevAnno;
+                displayAnnotation(currentAnnotation);
             } else {
                 this.showDialog("This the first annotation of the first image.");
             }
@@ -860,14 +898,14 @@
          */
         function handleNextMask() {
             this.autoSave();
-            if (currenAnnotation.getLabel() === NOT_LABELLED) {
+            if (currentAnnotation.getLabel() === NOT_LABELLED) {
                 this.showDialog("Please label the current annotation before moving to the next one.");
                 return;
             }
-            let nextAnno = DATASET.getNextAnnotation(currenAnnotation);
+            let nextAnno = DATASET.getNextAnnotation(currentAnnotation);
             if (nextAnno) {
-                currenAnnotation = nextAnno;
-                displayAnnotation(currenAnnotation);
+                currentAnnotation = nextAnno;
+                displayAnnotation(currentAnnotation);
             } else {
                 this.showDialog("This the last annotation of the last image.");
             }
@@ -887,10 +925,10 @@
          */
         function handlePrevious() {
             this.autoSave();
-            let prevImage = DATASET.getPrevImage(currenAnnotation);
+            let prevImage = DATASET.getPrevImage(currentAnnotation);
             if (prevImage) {
-                currenAnnotation = prevImage.getFirstAnnotation();
-                displayAnnotation(currenAnnotation);
+                currentAnnotation = prevImage.getFirstAnnotation();
+                displayAnnotation(currentAnnotation);
             } else {
                 this.showDialog("This the first image.");
             }
@@ -901,7 +939,7 @@
          */
         function handleNext() {
             this.autoSave();
-            if (currenAnnotation.getLabel() === NOT_LABELLED) {
+            if (currentAnnotation.getLabel() === NOT_LABELLED) {
                 this.showDialog("Please label the current annotation before moving to the next one.");
                 return;
             }
@@ -925,14 +963,14 @@
             for (const image of DATASET.getImages()) {
                 for (const annotation of image.getAnnotations()) {
                     if (annotation.getLabel() === NOT_LABELLED) {
-                        currenAnnotation = annotation;
-                        displayAnnotation(currenAnnotation);
+                        currentAnnotation = annotation;
+                        displayAnnotation(currentAnnotation);
                         return;
                     }
                 }
             }
-            currenAnnotation = DATASET.getLastImage().getLastAnnotation();
-            displayAnnotation(currenAnnotation);
+            currentAnnotation = DATASET.getLastImage().getLastAnnotation();
+            displayAnnotation(currentAnnotation);
             this.showDialog("All annotations are labeled. Please save the json file and continue to next dataset");
         }
 
@@ -943,14 +981,26 @@
             NOTIFICATION_DIALOG.close();
         }
 
+        /**
+         * Get the input label from the radio button.
+         */
         function getLabelFromRadio() {
             if (RADIO_POS.checked) {
                 return POSITIVE;
             } else if (RADIO_NEG.checked) {
                 return NEGATIVE;
+            } else if (RADIO_REFINED.checked) {
+                return REFINED;
             } else {
                 return NOT_LABELLED;
             }
+        }
+
+        /**
+         * Get the input label from the radio button.
+         */
+        function getRefinedFromRadio() {
+            return RADIO_REFINED.checked;
         }
 
         /**
@@ -958,8 +1008,8 @@
          * The annotation include the category, caption, and label.
          */
         function autoSave() {
-            currenAnnotation.setCaption(CAPTION.value);
-            currenAnnotation.setLabel(getLabelFromRadio());
+            currentAnnotation.setCaption(CAPTION.value);
+            currentAnnotation.setLabel(getLabelFromRadio());
         }
 
     </script>
