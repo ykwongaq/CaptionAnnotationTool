@@ -25,6 +25,83 @@
         .top-button {
             z-index: 1000;
         }
+
+        /* .negative_tags_dict {
+            display: inline-flex;
+            align-items: center;
+        } */
+
+        .negative_tags_dict div {
+            display: inline-flex;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+            /* justify-content: center; */
+        }
+
+        .negative_tags_dict input[type="checkbox"] {
+            display: none;
+        }
+
+        .negative_tags_dict input[type="checkbox"]:checked + span {
+            box-shadow: 0 0 0 0.0625em #0043ed;
+            background-color: #dee7ff;
+            z-index: 1;
+            color: #0043ed;
+        }
+
+        .negative_tags:focus {
+            outline: 0;
+            border-color: #2260ff;
+            box-shadow: 0 0 0 4px #b5c9fc;
+        }
+
+        .negative_tags label span {
+            display: block;
+            cursor: pointer;
+            background-color: #fff;
+            padding: 0.375em .75em;
+            position: relative;
+            margin-left: .0625em;
+            box-shadow: 0 0 0 0.0625em #b5bfd9;
+            letter-spacing: .05em;
+            color: #3e4963;
+            text-align: center;
+            transition: background-color .5s ease;
+        }
+
+        .negative_tags label:first-child span {
+            border-radius: .375em 0 0 .375em;
+        }
+
+        .negative_tags label:last-child span {
+            border-radius: 0 .375em .375em 0;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 300px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            
+            /* Position the tooltip */
+            position: absolute;
+            z-index: 1;
+            bottom: 100%;
+            left: 50%;
+            margin-left: -60px;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+        }
     </style>
 </head>
 <body>
@@ -47,7 +124,7 @@
                 </label>
             </div>
 
-            <div class=" flex justify-between mx-auto max-w-3xl sm:mt-6 lg:mx-0 lg:flex lg:max-w-none" style="height: 550px;">
+            <div class=" flex justify-between mx-auto max-w-3xl sm:mt-6 lg:mx-0 lg:flex lg:max-w-none">
 
                 <div id="imgContainer" class="relative rounded-sm ring-1 ring-gray-200 sm:text-center max-width:100% overflow:hidden" style="width: 60%; height: 550px;">
                     <img id="img" style="display: block; height: 100%; width: 100%;" src="">
@@ -55,7 +132,7 @@
                     <div id="imgName" class="mt-1 py-2 text-center text-gray-500  sm:mt-0 sm:text-center"></div>
                 </div>
 
-                <div class=" p-6" style="width: 40%; height: 500px;">
+                <div class=" p-7" style="width: 40%;">
 
                     <div class="flex flex-row">
                         <div class="flex flex-col justify-between sm:text-center ">
@@ -84,6 +161,7 @@
                                 <textarea id="category" rows="2" class="px-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm sm:leading-6" style="resize:none; overflow:scroll"></textarea>
                             </div>                 
                         </div>
+                    </div>
               
                     <div class="flex flex-col">
                         <dt class="mt-4 font-semibold text-gray-900">Caption</dt>
@@ -117,11 +195,81 @@
                             </div>
                         </form>
                     </div>
-        
+
+                    <div class="negative_tags_dict">
+                        <label><strong>Object: </strong></label>
+                        <div class="negative_tags">
+                            <label class="tooltip">
+                                <!-- Note that the id has to be the same as the constant value in javascript with "_checkbox" postfix -->
+                                <input class="negative_tag_input" type="checkbox" name="radio" id="Classification_checkbox">
+                                <span>Classification</span>
+                                <span class="tooltiptext">Classify the target wrongly. E.g. Cat is identified as a dog</span>
+                            </label>
+                            <label class="tooltip">
+                                <!-- Note that the id has to be the same as the constant value in javascript with "_checkbox" postfix -->
+                                <input class="negative_tag_input" type="checkbox" name="radio" id="Background_checkbox">
+                                <span>Background</span>
+                                <span class="tooltiptext">Background is identified wrongly. E.g. Ocean is identified as sky</span>
+                            </label>
+                            <label class="tooltip">
+                                <input class="negative_tag_input" type="checkbox" name="radio" id="Unexisting_checkbox">
+                                <span>Unexisting</span>
+                                <span class="tooltiptext">The object does not exist in the image. E.g. ... with a big black spot ... (but there are not black spot)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="negative_tags_dict">
+                        <label><strong>Relation: </strong></label>
+                        <div class="negative_tags">
+                            <label class="tooltip">
+                                <input class="negative_tag_input" type="checkbox" name="radio" id="Spatial_checkbox">
+                                <span>Spatial</span>
+                                <span class="tooltiptext">The spatial relation is wrong. E.g. The fish is swimming to the rigth (but it is to the left)</span>
+                            </label>
+                            <label class="tooltip">
+                                <input class="negative_tag_input" type="checkbox" name="radio" id="Action_checkbox">
+                                <span>Action</span>
+                                <span class="tooltiptext">The action is wrong. E.g. The fish is eating (but the fish is swimming)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="negative_tags_dict">
+                        <label><strong>Attribute: </strong></label>
+                        <div class="negative_tags">
+                            <label class="tooltip">
+                                <input class="negative_tag_input" type="checkbox" name="radio" id="Size_checkbox">
+                                <span>Size</span>
+                                <span class="tooltiptext">The size is wrong. E.g. The fish is big (but the fish is small)</span>
+                            </label>
+                            <label class="tooltip">
+                                <input class="negative_tag_input" type="checkbox" name="radio" id="Color_checkbox">
+                                <span>Color</span>
+                                <span class="tooltiptext">The color is wrong. E.g. The fish is red (but the fish is blue)</span>
+                            </label>
+                            <label class="tooltip">
+                                <input class="negative_tag_input" type="checkbox" name="radio" id="Shape_checkbox">
+                                <span>Shape</span>
+                                <span class="tooltiptext">The shape is wrong. E.g. The fish is short (but the fish is long)</span>
+                            </label>
+                            <label class="tooltip">
+                                <input class="negative_tag_input" type="checkbox" name="radio" id="Texture_checkbox">
+                                <span>Texture</span>
+                                <span class="tooltiptext">The texture is wrong. E.g. The fish is smooth (but the fish is rough)</span>
+                            </label>
+                            <label class="tooltip">
+                                <input class="negative_tag_input" type="checkbox" name="radio" id="Material_checkbox">
+                                <span>Material</span>
+                                <span class="tooltiptext">The material is wrong. E.g. The fish model is made of wood (but it is made of plastic)</span>
+                            </label>
+                            <label class="tooltip">
+                                <input class="negative_tag_input" type="checkbox" name="radio" id="Counting_checkbox">
+                                <span>Counting</span>
+                                <span class="tooltiptext">The counting is wrong. E.g. There are 3 fish (but there are 4 fish)</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            
         </div>
         
         <div class="flex items-center justify-between mt-5 border-t border-gray-200 bg-white px-4 py-5 sm:px-6">
@@ -184,19 +332,21 @@
         var showLabel = true;
 
         // Json key for negative tags
-        const NEGATIVE_TAGS = "negative_tags";
+        const NEGATIVE_TAGS_PROPERTY = "negative_tags";
         // Negative tags, which will be stored as comma separated string
-        const CALSSIFICATION = "classification";
-        const BACKGROUND = "background"
-        const UNEXISTING = "unexisting"
-        const SPATIAL = "spatial"
-        const ACTION = "action"
-        const SIZE = "size"
-        const COLOR = "color"
-        const SHAPE = "shape"
-        const TEXTURE = "texture"
-        const MATERIAL = "material"
-        const COUNTING = "counting"
+        const CALSSIFICATION = "Classification";
+        const BACKGROUND = "Background"
+        const UNEXISTING = "Unexisting"
+        const SPATIAL = "Spatial"
+        const ACTION = "Action"
+        const SIZE = "Size"
+        const COLOR = "Color"
+        const SHAPE = "Shape"
+        const TEXTURE = "Texture"
+        const MATERIAL = "Material"
+        const COUNTING = "Counting"
+        
+        const NEGATIVE_TAGS = [CALSSIFICATION, BACKGROUND, UNEXISTING, SPATIAL, ACTION, SIZE, COLOR, SHAPE, TEXTURE, MATERIAL, COUNTING];
 
         /**
          * Annotation store the data of an annotation.
@@ -212,8 +362,8 @@
                 if (!this.jsonData.hasOwnProperty("label")) {
                     this.jsonData.label = NOT_LABELLED;
                 }
-                if (!this.jsonData.hasOwnProperty(NEGATIVE_TAGS)) {
-                    this.jsonData[NEGATIVE_TAGS] = "";
+                if (!this.jsonData.hasOwnProperty(NEGATIVE_TAGS_PROPERTY)) {
+                    this.jsonData[NEGATIVE_TAGS_PROPERTY] = "";
                 }
             }
 
@@ -279,6 +429,24 @@
              */
             getCategory() {
                 return this.jsonData.category;
+            }
+
+            /**
+             * Get the negative tags of the annotation.
+             */
+            getNegativeTagsString() {
+                return this.jsonData[NEGATIVE_TAGS_PROPERTY];
+            }
+
+            /**
+             * Set the negative tags of the annotation.
+             * @param {string} negative_tags
+             */
+            setNegativeTagsString(negative_tags) {
+                if (Array.isArray(negative_tags) && negative_tags.every(tag => typeof tag === "string")) {
+                    negative_tags = negative_tags.join(", ");
+                }
+                this.jsonData[NEGATIVE_TAGS_PROPERTY] = negative_tags;
             }
 
             /**
@@ -782,6 +950,10 @@
             let imageIdx = DATASET.getImageIdx(image);
             let imageCount = DATASET.getImages().length;
             this.displayImageIndex(imageIdx+1, imageCount);
+
+            let negativeTagsString = annotation.getNegativeTagsString();
+            let negativeTags = negativeTagsString.split(",");
+            displayNegativeTags(negativeTags);
         }
 
         /**
@@ -863,7 +1035,6 @@
             BBOX.style.top = newYPercent + "%";
             BBOX.style.width = newWPercent + "%";
             BBOX.style.height = newHPercent + "%";
-
         }
 
         /**
@@ -900,6 +1071,10 @@
             this.autoSave();
             if (currentAnnotation.getLabel() === NOT_LABELLED) {
                 this.showDialog("Please label the current annotation before moving to the next one.");
+                return;
+            }
+            if (currentAnnotation.getLabel() === NEGATIVE && currentAnnotation.getNegativeTagsString() === "") {
+                this.showDialog("Please select the negative tags before moving to the next one.");
                 return;
             }
             let nextAnno = DATASET.getNextAnnotation(currentAnnotation);
@@ -952,6 +1127,19 @@
 
         function displayImageIndex(imageIdx, imageCount) {
             IMAGE_IDX.innerText = `${imageIdx} / ${imageCount}`;
+        }
+        
+        function displayNegativeTags(negativeTags) {
+            for (const negative_tag of NEGATIVE_TAGS) {
+                const negative_tag_checkbox = document.getElementById(negative_tag + "_checkbox");
+                negative_tag_checkbox.checked = false;
+                for (const input_negative_tag of negativeTags) {
+                    if (input_negative_tag === negative_tag) {
+                        negative_tag_checkbox.checked = true;
+                        break;
+                    }
+                }
+            }
         }
 
         /**
@@ -1010,8 +1198,22 @@
         function autoSave() {
             currentAnnotation.setCaption(CAPTION.value);
             currentAnnotation.setLabel(getLabelFromRadio());
+
+            const negativeTags = getNegativeTagsFromInput();
+            const negativeTagsString = negativeTags.join(",");
+            currentAnnotation.setNegativeTagsString(negativeTagsString);
         }
 
+        function getNegativeTagsFromInput() {
+            let negativeTags = [];
+            for (const negative_tag of NEGATIVE_TAGS) {
+                const negative_tag_checkbox = document.getElementById(negative_tag + "_checkbox");
+                if (negative_tag_checkbox.checked) {
+                    negativeTags.push(negative_tag);
+                }
+            }
+            return negativeTags;
+        }
     </script>
 </body>
 </html>
