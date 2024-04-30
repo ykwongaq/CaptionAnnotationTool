@@ -143,6 +143,10 @@
                             <div class="font-semibold text-gray-900">Image</div>
                             <div id="imageIndex" class="mt-1 py-2 text-center text-gray-500  sm:mt-0 sm:text-center">0 / 0</div>              
                         </div>
+                        <div class="flex flex-col justify-between sm:text-center ml-10">
+                            <div class="font-semibold text-gray-900" id="category_count_label">Category: </div>
+                            <div id="category_count_index" class="mt-1 py-2 text-center text-gray-500  sm:mt-0 sm:text-center">0 / 0</div>              
+                        </div>
                     </div>
 
                     
@@ -329,6 +333,14 @@
         const BBOX = document.getElementById("bbox");
         const NOTIFICATION_DIALOG = document.getElementById("notificationDialog");
         const NOTIFICATION_MESSAGE = document.getElementById("notificationMessage");
+
+        // It is used to keep check of how many category have been refined
+        const CATEGORY_COUNT_LABEL = document.getElementById("category_count_label");
+        const CATEGORY_COUNT_IDX = document.getElementById("category_count_index");
+
+        // Expected number of reinfed image for each category
+        const EXPECTED_REFINED_COUNT = 10
+        
         var showLabel = true;
 
         // Json key for negative tags
@@ -347,6 +359,18 @@
         const COUNTING = "Counting"
         
         const NEGATIVE_TAGS = [CALSSIFICATION, BACKGROUND, UNEXISTING, SPATIAL, ACTION, SIZE, COLOR, SHAPE, TEXTURE, MATERIAL, COUNTING];
+
+        /*
+         *  Initialization
+         */
+        attachNegativeTagOnClick();
+        RADIO_POS.onclick = function() {
+            clearNegativeTags();
+        }
+        RADIO_REFINED.onclick = function() {
+            clearNegativeTags();
+        }
+
 
         /**
          * Annotation store the data of an annotation.
@@ -954,6 +978,12 @@
             let negativeTagsString = annotation.getNegativeTagsString();
             let negativeTags = negativeTagsString.split(",");
             displayNegativeTags(negativeTags);
+
+            let category = annotation.getCategory();
+            let categoryCount = getCategoryCount();
+            let categoryRefinedCount = getCategoryRefinedCount();
+            displayCategoryRefinedCount(categoryRefinedCount[category], categoryCount[category]);
+            displayCategoryLabel(category);
         }
 
         /**
@@ -1128,6 +1158,14 @@
         function displayImageIndex(imageIdx, imageCount) {
             IMAGE_IDX.innerText = `${imageIdx} / ${imageCount}`;
         }
+
+        function displayCategoryRefinedCount(refinedCount, categoryCount) {
+            CATEGORY_COUNT_IDX.innerText = `${refinedCount} / ${categoryCount}`;
+        }
+
+        function displayCategoryLabel(category) {
+            CATEGORY_COUNT_LABEL.innerText = `Category: ${category}`;
+        }
         
         function displayNegativeTags(negativeTags) {
             for (const negative_tag of NEGATIVE_TAGS) {
@@ -1213,6 +1251,65 @@
                 }
             }
             return negativeTags;
+        }
+
+        function attachNegativeTagOnClick() {
+            const negative_tag_inputs = document.getElementsByClassName("negative_tag_input");
+            for (const negative_tag_input of negative_tag_inputs) {
+                negative_tag_input.onclick = function() {
+                    displayLable(NEGATIVE)
+                }
+            }
+        }
+
+        function clearNegativeTags() {
+            const negative_tag_inputs = document.getElementsByClassName("negative_tag_input");
+            for (const negative_tag_input of negative_tag_inputs) {
+                negative_tag_input.checked = false;
+            }
+        }
+
+        /**
+         * Get the category refined count.
+         * The refined count is calculated that, for each image, if one of the annotation is refined, then the image is refined.
+         * And the refined count is the number of refined images for each category.
+         */
+        function getCategoryRefinedCount() {
+            let categoryRefinedCount = {};
+            for (const image of DATASET.getImages()) {
+                for (const annotation of image.getAnnotations()) {
+                    if (annotation.getLabel() === REFINED) {
+                        let category = annotation.getCategory();
+                        if (!categoryRefinedCount.hasOwnProperty(category)) {
+                            categoryRefinedCount[category] = 1;
+                        } else {
+                            categoryRefinedCount[category] += 1;
+                        }
+                        break;
+                    }
+                }
+            }
+            return categoryRefinedCount;
+        }
+
+        /**
+         * Get the category count.
+         * Category count is calculated by counting the number of image that belong to the category.
+         */
+        function getCategoryCount() {
+            let categoryCount = {};
+            for (const image of DATASET.getImages()) {
+                for (const annotation of image.getAnnotations()) {
+                    let category = annotation.getCategory();
+                    if (!categoryCount.hasOwnProperty(category)) {
+                        categoryCount[category] = 1;
+                    } else {
+                        categoryCount[category] += 1;
+                    }
+                    break;
+                }
+            }
+            return categoryCount;
         }
     </script>
 </body>
