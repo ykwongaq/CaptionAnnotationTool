@@ -1159,7 +1159,19 @@
                 this.showDialog("Please label the current annotation before moving to the next one.");
                 return;
             }
-            this.handleNextMask();
+            if (currentAnnotation.getLabel() === NEGATIVE && currentAnnotation.getNegativeTagsString() === "") {
+                this.showDialog("Please select the negative tags before moving to the next one.");
+                return;
+            }
+
+            let nextImage = DATASET.getNextImageByAnnotation(currentAnnotation);
+            if (nextImage == null) {
+                this.showDialog("This the last image of the last image.");
+                return;
+            }
+            let firstAnnotation = nextImage.getFirstAnnotation();
+            currentAnnotation = firstAnnotation;
+            displayAnnotation(currentAnnotation);
         }
 
         function displayMaskIndex(maskIdx, maskCount) {
