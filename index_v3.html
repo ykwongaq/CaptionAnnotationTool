@@ -479,6 +479,9 @@
              * @returns {string} The processed category.
              */
             processCategory(category) {
+                if (category == undefined) {
+                    return "";
+                }
                 // Find the index of first uppercase letter
                 const idx = category.search(/[A-Z]/);
                 if (idx === -1) {
