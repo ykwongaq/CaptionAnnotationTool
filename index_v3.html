@@ -985,7 +985,7 @@
             let category = annotation.getCategory();
             let categoryCount = getCategoryCount();
             let categoryRefinedCount = getCategoryRefinedCount();
-            displayCategoryRefinedCount(categoryRefinedCount[category], categoryCount[category]);
+            displayCategoryRefinedCount(categoryRefinedCount[category] || 0, categoryCount[category]);
             displayCategoryLabel(category);
         }
 
