@@ -456,6 +456,14 @@
             }
 
             /**
+             * Set the category of the annotation.
+             * @param {string} catetory
+             */
+            setCategory(catetory) {
+                this.jsonData.category = catetory;
+            }
+
+            /**
              * Get the negative tags of the annotation.
              */
             getNegativeTagsString() {
@@ -1237,6 +1245,7 @@
          * The annotation include the category, caption, and label.
          */
         function autoSave() {
+            currentAnnotation.setCategory(CATEGORY.value);
             currentAnnotation.setCaption(CAPTION.value);
             currentAnnotation.setLabel(getLabelFromRadio());
 
@@ -1294,6 +1303,7 @@
             }
             return categoryRefinedCount;
         }
+
 
         /**
          * Get the category count.
