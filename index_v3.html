@@ -382,7 +382,6 @@
              */
             constructor(annoData) {
                 this.jsonData = annoData;
-                this.jsonData.category = this.processCategory(this.jsonData.category);
                 if (!this.jsonData.hasOwnProperty("label")) {
                     this.jsonData.label = NOT_LABELLED;
                 }
