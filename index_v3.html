@@ -385,7 +385,7 @@
             constructor(annoData) {
                 this.jsonData = annoData;
                 if (!this.jsonData.hasOwnProperty("label")) {
-                    this.jsonData.label = NOT_LABELLED;
+                    this.jsonData.label = POSITIVE;
                 }
                 if (!this.jsonData.hasOwnProperty(NEGATIVE_TAGS_PROPERTY)) {
                     this.jsonData[NEGATIVE_TAGS_PROPERTY] = "";
