@@ -279,6 +279,7 @@
         <div class="flex items-center justify-between mt-5 border-t border-gray-200 bg-white px-4 py-5 sm:px-6">
             <button onclick="handlePrevious()" type="button" class="top-button bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Previous</button>
             <button onclick="saveJsonFile()" type="button" class="top-button bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">SaveAndExport</button>
+            <button onclick="handleDelete()" type="button" class="top-button bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Delete</button>
             <button onclick="handleContinue()" type="button" class="top-button bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Continue</button>
             <!-- <button onclick="handleTest()" type="button" class="bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Test</button> -->
             <button onclick="handleNext()" type="button" class="top-button bg-bg font-bold text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Next</button>
@@ -647,6 +648,17 @@
             getLastAnnotation() {
                 return this.annotations[this.annotations.length - 1];
             }
+
+            /**
+             * Delete the annotation from the image.
+             * If the image does not contain the annotation, do nothing.
+             */
+            removeAnnotation(annotation) {
+                const idx = this.getAnnotationIdx(annotation);
+                if (idx !== -1) {
+                    this.annotations.splice(idx, 1);
+                }
+            }
         }
 
         
@@ -908,6 +920,17 @@
                     categories: this.categoriesData,
                 });
             }
+            
+            /**
+             * Remove the image from the dataset.
+             * If the image does not exist in the dataset, do nothing.
+             */
+            removeImage(image) {
+                const idx = this.getImageIdx(image);
+                if (idx !== -1) {
+                    this.images.splice(idx, 1);
+                }
+            }
         }
         // Singleton dataset
         const DATASET = Dataset.getInstance();
@@ -1159,6 +1182,49 @@
                 return;
             }
             this.handleNextMask();
+        }
+
+        /**
+         * Delete the current annotation, and then move to next annotaiton.
+         * If there are no next annotation, then move to previous annotation.
+         * If it is the only annotation of the only image in the dataset, then it is not allowed to delete.
+         */
+        function handleDelete() {
+            this.autoSave();
+
+            // Check if the annotation is allowed to be deleted or not
+            if (DATASET.getImages().length === 1 && DATASET.getFirstImage().getAnnotationsCount() === 1) {
+                this.showDialog("This is the only annotation of the only image in the dataset. It is not allowed to delete.");
+                return;
+            }
+
+            annotation_to_delete = currentAnnotation
+            // Move to the next annotation or previous annotation
+            let nextAnno = DATASET.getNextAnnotation(currentAnnotation);
+            if (nextAnno) {
+                currentAnnotation = nextAnno;
+            } else {
+                currentAnnotation = DATASET.getPrevAnnotation(currentAnnotation);
+            }
+
+            // Delete the annotation
+            deleteAnnotation(annotation_to_delete);
+
+
+            // Display the annotation
+            displayAnnotation(currentAnnotation);
+        }
+
+        /**
+         * Delete the give annotation from the dataset.
+         * If the annotation is the last annotation of the image, then delete the image as well.
+         */
+        function deleteAnnotation(annotation) {
+            const image = DATASET.getImageByAnnotation(annotation);
+            image.removeAnnotation(annotation);
+            if (image.getAnnotationsCount() === 0) {
+                DATASET.removeImage(image);
+            }
         }
 
         function displayMaskIndex(maskIdx, maskCount) {
