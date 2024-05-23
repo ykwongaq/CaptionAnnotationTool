@@ -154,6 +154,7 @@
                         <div class="flex flex-row justify-between sm:text-center">
                             <button onclick="handlePreviousMask()" type="button" class="top-button text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">PrevMask</button>
                             <button onclick="handleToggleBbox()" type="button" class="top-button text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Toggle</button>
+                            <button onclick="handleSpread()" type="button" class="top-button text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">Spread</button>
                             <button onclick="handleNextMask()" type="button" class="top-button bg-bg text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">NextMask</button>                
                         </div>
                     </div>
@@ -1210,7 +1211,6 @@
             // Delete the annotation
             deleteAnnotation(annotation_to_delete);
 
-
             // Display the annotation
             displayAnnotation(currentAnnotation);
         }
@@ -1388,6 +1388,20 @@
                 }
             }
             return categoryCount;
+        }
+
+        /**
+         * Copy the category of the current annotation to all the annotation belong to the same image.
+         */
+        function handleSpread() {
+            this.autoSave();
+            const image = DATASET.getImageByAnnotation(currentAnnotation);
+            const category = currentAnnotation.getCategory();
+            for (const annotation of image.getAnnotations()) {
+                annotation.setCategory(category);
+            }
+            displayAnnotation(currentAnnotation);
+            this.autoSave();
         }
     </script>
 </body>
