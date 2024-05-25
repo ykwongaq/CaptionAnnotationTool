@@ -1191,14 +1191,19 @@
         }
 
         /**
-         * Continue to the first annotation that is not labeled.
-         * If there are no unlabeled annotation, then just jump to the last annotation.
+         * Continue to the first annotation that is the category or caption is empty.
          */
         function handleContinue() {
             this.autoSave();
             for (const image of DATASET.getImages()) {
                 for (const annotation of image.getAnnotations()) {
-                    if (annotation.getLabel() === NOT_LABELLED) {
+                    if (annotation.getCategory() == "") {
+                        currentAnnotation = annotation;
+                        displayAnnotation(currentAnnotation);
+                        return;
+                    }
+
+                    if (annotation.getCaption() == "") {
                         currentAnnotation = annotation;
                         displayAnnotation(currentAnnotation);
                         return;
