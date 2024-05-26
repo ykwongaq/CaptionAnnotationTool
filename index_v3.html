@@ -1101,7 +1101,7 @@
             let category = annotation.getCategory();
             let categoryCount = getCategoryCount();
             let categoryRefinedCount = getCategoryRefinedCount();
-            displayCategoryRefinedCount(categoryRefinedCount[category] || 0, categoryCount[category]);
+            displayCategoryRefinedCount(categoryRefinedCount[category], categoryCount[category]);
             displayCategoryLabel(category);
 
             let maskId = annotation.getId();
