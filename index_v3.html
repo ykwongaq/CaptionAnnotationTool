@@ -229,7 +229,7 @@
                     </div>
               
                     <div class="flex flex-col">
-                        <dt class="mt-4 font-semibold text-gray-900">Caption</dt>
+                        <dt id="caption_label" class="mt-4 font-semibold text-gray-900">Caption</dt>
                         <!-- <dd class="mt-2 leading-7 text-gray-400">Non laboris consequat cupidatat laborum magna. Eiusmod non irure cupidatat duis commodo amet.</dd> -->
                         <div class="col-span-full">
                             <div class="mt-2">
@@ -395,6 +395,7 @@
         const BBOX = document.getElementById("bbox");
         const NOTIFICATION_DIALOG = document.getElementById("notificationDialog");
         const NOTIFICATION_MESSAGE = document.getElementById("notificationMessage");
+        const CAPTION_LABEL = document.getElementById("caption_label");
 
         // It is used to keep check of how many category have been refined
         const CATEGORY_COUNT_LABEL = document.getElementById("category_count_label");
@@ -429,6 +430,11 @@
         const COUNTING = "Counting"
         
         const NEGATIVE_TAGS = [CALSSIFICATION, BACKGROUND, UNEXISTING, SPATIAL, ACTION, SIZE, COLOR, SHAPE, TEXTURE, MATERIAL, COUNTING];
+
+        const SMALL_BBOX_THRESHOLD = 1024;
+
+        const BIG_BBOX_CAPTION_LABEL = "Caption"
+        const SMALL_BBOX_CAPTION_LABEL = "Caption (Small BBox will not be saved)"
 
         /*
          *  Initialization
@@ -515,6 +521,11 @@
             setLabel(label) {
                 this.jsonData.label = label;
             }
+            
+            is_small_bbox() {
+                const area = this.getArea();
+                return area < SMALL_BBOX_THRESHOLD;
+            }
 
             /**
              * Get the category of the annotation.
@@ -522,6 +533,11 @@
              */
             getCategory() {
                 return this.jsonData.category;
+            }
+
+            getArea() {
+                const bbox = this.getBbox();
+                return bbox[2] * bbox[3];
             }
 
             /**
@@ -1092,6 +1108,14 @@
 
             let imageId = image.getId();
             displayImageID(imageId);
+
+            if (currentAnnotation.is_small_bbox()) {
+                setCaptionLabel(SMALL_BBOX_CAPTION_LABEL);
+                lockCaptionTextArea();
+            } else {
+                setCaptionLabel(BIG_BBOX_CAPTION_LABEL);
+                unlockCaptionTextArea();
+            }
         }
 
         /**
@@ -1354,7 +1378,7 @@
                         displayAnnotation(currentAnnotation);
                         return;
                     }
-
+                    
                     if (annotation.getCaption() == "" && !annotation.is_small_bbox()) {
                         currentAnnotation = annotation;
                         displayAnnotation(currentAnnotation);
@@ -1402,7 +1426,9 @@
          */
         function autoSave() {
             currentAnnotation.setCategory(CATEGORY.value);
-            currentAnnotation.setCaption(CAPTION.value);
+            if (!currentAnnotation.is_small_bbox()) {
+                currentAnnotation.setCaption(CAPTION.value);
+            }
             currentAnnotation.setLabel(getLabelFromRadio());
 
             const negativeTags = getNegativeTagsFromInput();
@@ -1537,6 +1563,18 @@
 
         function displayImageID(imageID) {
             IMAGE_ID.innerText = `IMAGE (ID: ${imageID})`;
+        }
+
+        function lockCaptionTextArea() {
+            CAPTION.disabled = true;
+        }
+
+        function unlockCaptionTextArea() {
+            CAPTION.disabled = false;
+        }
+
+        function setCaptionLabel(content) {
+            CAPTION_LABEL.innerText = content;
         }
     </script>
 </body>
