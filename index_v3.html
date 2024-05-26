@@ -102,6 +102,52 @@
         .tooltip:hover .tooltiptext {
             visibility: visible;
         }
+        
+        .btn {
+            display: inline-block;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            border: 0;
+            outline: 0;
+            padding: 0;
+            transition: all 200ms ease-in;
+            cursor: pointer;
+        }
+
+        .btn--primary {
+            background: #7f8ff4;
+            color: #fff;
+            box-shadow: 0 0 10px 2px rgba(0, 0, 0, .1);
+            border-radius: 2px;
+            padding: 1% 2%;
+            /* padding: 8% 24%; */
+        }
+
+        .btn--primary:hover {
+            background: #6e7bdb; /* darkened color */
+        }
+
+        .btn--primary:active {
+            background: #7f8ff4;
+            box-shadow: inset 0 0 10px 2px rgba(0, 0, 0, .2);
+        }
+
+        .btn--inside {
+            margin-left: -48px;
+        }
+
+        .form__field {
+            /* width: 360px; */
+            width: 40%;
+            background: #fff;
+            color: #a3a3a3;
+            font: inherit;
+            box-shadow: 0 6px 10px 0 rgba(0, 0, 0, .1);
+            border: 0;
+            outline: 0;
+            padding: 11px 18px;
+        }
     </style>
 </head>
 <body>
@@ -136,12 +182,12 @@
 
                     <div class="flex flex-row">
                         <div class="flex flex-col justify-between sm:text-center ">
-                            <div class="font-semibold text-gray-900">Mask</div>
-                            <div id="maskIndex" class="mt-1 py-2 text-center text-gray-500  sm:mt-0 sm:text-center">0 / 0</div>              
+                            <div id="maskID" class="font-semibold text-gray-900">Mask</div>
+                            <div id="maskIndex" class="mt-1 py-2 text-center text-gray-500  sm:mt-0 sm:text-center">0 / 0</div>
                         </div>
                         <div class="flex flex-col justify-between sm:text-center ml-10">
-                            <div class="font-semibold text-gray-900">Image</div>
-                            <div id="imageIndex" class="mt-1 py-2 text-center text-gray-500  sm:mt-0 sm:text-center">0 / 0</div>              
+                            <div id="imageID" class="font-semibold text-gray-900">Image</div>
+                            <div id="imageIndex" class="mt-1 py-2 text-center text-gray-500  sm:mt-0 sm:text-center">0 / 0</div>       
                         </div>
                         <div class="flex flex-col justify-between sm:text-center ml-10">
                             <div class="font-semibold text-gray-900" id="category_count_label">Category: </div>
@@ -158,6 +204,20 @@
                             <button onclick="handleNextMask()" type="button" class="top-button bg-bg text-center text-sm border-2 border-black rounded-md shadow-yellow py-2 px-2  hover:bg-gray-700 hover:text-white focus:outline-none bg-yellow">NextMask</button>                
                         </div>
                     </div>
+
+                    <div class="flex flex-col">
+                        <div class="flex flex-col justify-between sm:text-center">
+                            <div>
+                                <input type="text" id="image_id_input" class="form__field" placeholder="Image ID">
+                                <button onclick="handleImageIdJump()" class="btn btn--primary btn--inside uppercase">Submit</button>
+                            </div>
+                            <div>
+                                <input type="text" id="annotation_id_input" class="form__field" placeholder="Annotation ID">
+                                <button onclick="handleAnnotationIdJump()" class="btn btn--primary btn--inside uppercase">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+
 
                     <div class="flex flex-col">
                         <dt class="mt-4 font-semibold text-gray-900">Category</dt>
@@ -343,6 +403,14 @@
         // Expected number of reinfed image for each category
         const EXPECTED_REFINED_COUNT = 10
         
+        // Jumping
+        const IMAGE_ID_INPUT = document.getElementById("image_id_input");
+        const ANNOTATION_ID_INPUT = document.getElementById("annotation_id_input");
+
+        // ID Visualization
+        const MASK_ID = document.getElementById("maskID");
+        const IMAGE_ID = document.getElementById("imageID");
+
         var showLabel = true;
 
         // Json key for negative tags
@@ -1018,6 +1086,12 @@
             let categoryRefinedCount = getCategoryRefinedCount();
             displayCategoryRefinedCount(categoryRefinedCount[category] || 0, categoryCount[category]);
             displayCategoryLabel(category);
+
+            let maskId = annotation.getId();
+            displayMaskID(maskId);
+
+            let imageId = image.getId();
+            displayImageID(imageId);
         }
 
         /**
@@ -1419,6 +1493,50 @@
             }
             displayAnnotation(currentAnnotation);
             this.autoSave();
+        }
+
+        /**
+         * Jump to the first annotation of the image that has the given image id.
+         * Before jumping, save the current annotation.
+         */
+        function handleImageIdJump() {
+            this.autoSave();
+            const imageId = parseInt(IMAGE_ID_INPUT.value);
+            for (const image of DATASET.getImages()) {
+                if (image.getId() === imageId) {
+                    currentAnnotation = image.getFirstAnnotation();
+                    displayAnnotation(currentAnnotation);
+                    return;
+                }
+            }
+            this.showDialog("The image id does not exist.");
+        }
+
+        /**
+         * Jump to the annotation that has the given annotation id.
+         * Before jumping, save the current annotation.
+         */
+        function handleAnnotationIdJump() {
+            this.autoSave();
+            const annotationId = parseInt(ANNOTATION_ID_INPUT.value);
+            for (const image of DATASET.getImages()) {
+                for (const annotation of image.getAnnotations()) {
+                    if (annotation.getId() === annotationId) {
+                        currentAnnotation = annotation;
+                        displayAnnotation(currentAnnotation);
+                        return;
+                    }
+                }
+            }
+            this.showDialog("The annotation id does not exist.");
+        }
+
+        function displayMaskID(maskID) {
+            MASK_ID.innerText = `MASK (ID: ${maskID})`;
+        }
+
+        function displayImageID(imageID) {
+            IMAGE_ID.innerText = `IMAGE (ID: ${imageID})`;
         }
     </script>
 </body>
