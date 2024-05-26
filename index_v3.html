@@ -1355,7 +1355,7 @@
                         return;
                     }
 
-                    if (annotation.getCaption() == "") {
+                    if (annotation.getCaption() == "" && !annotation.is_small_bbox()) {
                         currentAnnotation = annotation;
                         displayAnnotation(currentAnnotation);
                         return;
